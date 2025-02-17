@@ -1,4 +1,3 @@
-import pyodbc
 import tkinter as tk
 from tkinter import ttk
 from tkinter import messagebox
@@ -67,7 +66,7 @@ class UserSearchTab(tk.Frame):
                 messagebox.showwarning("Invalid Operation", "You cannot add yourself as a friend.")
                 return
 
-            self.cur.execute("SELECT * FROM dbo.friendship WHERE (user_id=? AND friend=?) OR (user_id=? AND friend=?)",
+            self.cur.execute("SELECT * FROM friendship WHERE (user_id=? AND friend=?) OR (user_id=? AND friend=?)",
                              (self.logged_userid, user_id, user_id, self.logged_userid))
             existing_friendship = self.cur.fetchone()
 
@@ -76,12 +75,12 @@ class UserSearchTab(tk.Frame):
             else:
                 confirm = messagebox.askyesno("Confirm Friendship", f"Do you want to add {name}:{user_id} as a friend?")
                 if confirm:
-                    self.cur.execute("INSERT INTO dbo.friendship VALUES (?, ?)", (self.logged_userid, user_id))
+                    self.cur.execute("INSERT INTO friendship VALUES (?, ?)", (self.logged_userid, user_id))
                     self.conn.commit()
                     messagebox.showinfo("Friendship Created", f"You are now friends with {name}:{user_id}.")
 
     def display_users_table_data(self):
-        self.cur.execute("SELECT user_id, name, review_count, useful, funny, cool, average_stars, yelping_since FROM dbo.user_yelp")
+        self.cur.execute("SELECT user_id, name, review_count, useful, funny, cool, average_stars, yelping_since FROM user_yelp")
         rows = self.cur.fetchall()
         self.user_table.delete(*self.user_table.get_children()) 
 
@@ -95,18 +94,18 @@ class UserSearchTab(tk.Frame):
         min_avg_stars = self.min_avg_stars_var.get()
         name = self.user_name_var.get().strip().lower()
 
-        query = f"SELECT user_id, name, review_count, useful, funny, cool, average_stars, yelping_since FROM dbo.user_yelp WHERE 1=1"
+        query = f"SELECT user_id, name, review_count, useful, funny, cool, average_stars, yelping_since FROM user_yelp WHERE 1=1"
 
         if min_review_count != "":
             query += f" AND review_count >= {min_review_count}"
 
-        if min_avg_stars != "":
+        elif min_avg_stars != "":
             query += f" AND average_stars >= {min_avg_stars}"
 
-        if name != "":
+        elif name != "":
             query += f" AND LOWER(name) LIKE '%{name}%'"
         else:
-            messagebox.showwarning("Empty Name Field", "Please enter a name to search.")
+            messagebox.showwarning("Empty Field", "Please enter at least a field to search.")
             return
 
         query += " ORDER BY name"

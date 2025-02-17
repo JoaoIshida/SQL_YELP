@@ -1,10 +1,12 @@
-import pyodbc
+import sqlite3
 import tkinter as tk
 from tkinter import ttk, messagebox
 from business_search import BusinessSearchTab
 from user_search import UserSearchTab
 
-def login(conn):
+DB_NAME = "yelp.db"
+
+def login():
     root = tk.Tk()
     root.title("Yelp Database Login")
     root.state("zoomed")
@@ -12,9 +14,11 @@ def login(conn):
     def validate_login():
         logged_userid = user_id_entry.get()
 
+        conn = sqlite3.connect(DB_NAME)
         cur = conn.cursor()
-        cur.execute("SELECT COUNT(*) FROM dbo.user_yelp WHERE user_id = ?", (logged_userid,))
+        cur.execute("SELECT COUNT(*) FROM user_yelp WHERE user_id = ?", (logged_userid,))
         result = cur.fetchone()[0]
+        conn.close()
 
         if result > 0:
             root.destroy()
@@ -37,7 +41,7 @@ def login(conn):
     root.mainloop()
 
 def main(logged_userid):
-    conn = pyodbc.connect('driver={ODBC Driver 18 for SQL Server};server=cypress.csil.sfu.ca;uid=s_jvi2;pwd=LtH4N2GqLHNbLYM2;Encrypt=yes;TrustServerCertificate=yes')
+    conn = sqlite3.connect(DB_NAME)
     
     root = tk.Tk()
     root.title("Yelp Database Search")
@@ -54,7 +58,5 @@ def main(logged_userid):
 
     root.mainloop()
 
-
 if __name__ == "__main__":
-    conn = pyodbc.connect('driver={ODBC Driver 18 for SQL Server};server=cypress.csil.sfu.ca;uid=s_jvi2;pwd=LtH4N2GqLHNbLYM2;Encrypt=yes;TrustServerCertificate=yes')
-    login(conn)
+    login()

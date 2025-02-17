@@ -1,4 +1,3 @@
-import pyodbc
 import tkinter as tk
 from tkinter import ttk
 import random
@@ -81,7 +80,7 @@ class BusinessSearchTab(tk.Frame):
 
                 review_id = generate_unique_review_id()
                 
-                self.cur.execute("INSERT INTO dbo.review (review_id, user_id, business_id, stars, date) VALUES (?,?,?,?,?)",
+                self.cur.execute("INSERT INTO review (review_id, user_id, business_id, stars, date) VALUES (?,?,?,?,?)",
                                 (review_id, self.logged_userid, business_id, selected_stars, current_date))
                 self.conn.commit()
                 messagebox.showinfo("Review Added", f"Review of {selected_stars} stars added successfully.")
@@ -92,7 +91,7 @@ class BusinessSearchTab(tk.Frame):
                 while True:
                     review_id = ''.join(random.choices(string.ascii_letters + string.digits + '-_', k=22))
                     
-                    self.cur.execute("SELECT review_id FROM dbo.review")
+                    self.cur.execute("SELECT review_id FROM review")
                     existing_review_ids = [row[0] for row in self.cur.fetchall()]
                     
                     if review_id not in existing_review_ids:
@@ -124,7 +123,7 @@ class BusinessSearchTab(tk.Frame):
             cancel_button.pack(side=tk.LEFT, padx=5)
 
     def display_business_table_data(self):
-        self.cur.execute("SELECT business_id, name, address, city, stars FROM dbo.business")
+        self.cur.execute("SELECT business_id, name, address, city, stars FROM business")
         rows = self.cur.fetchall()
         self.business_table.delete(*self.business_table.get_children())  
 
@@ -144,13 +143,13 @@ class BusinessSearchTab(tk.Frame):
         if min_stars != "":
             query += f" AND stars >= {min_stars}"
         
-        if city != "":
+        elif city != "":
             query += f" AND LOWER(city) LIKE '%{city}%'"
 
-        if name != "":
+        elif name != "":
             query += f" AND LOWER(name) LIKE '%{name}%'"
         else:
-            messagebox.showwarning("Empty Name Field", "Please enter a name to search.")
+            messagebox.showwarning("Empty Field", "Please enter at least a field to search.")
             return
 
         query += f" ORDER BY {order_by}"
